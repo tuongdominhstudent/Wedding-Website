@@ -1,0 +1,21 @@
+@import './reset.css';
+@import './tokens.css';
+@import './utilities.css';
+
+html,
+body {
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+}
+
+#root {
+  position: relative;
+}

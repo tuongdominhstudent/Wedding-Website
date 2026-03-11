@@ -1,0 +1,7 @@
+.appShell {
+  position: relative;
+  min-height: 100svh;
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  isolation: isolate;
+}

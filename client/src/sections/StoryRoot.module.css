@@ -1,0 +1,13 @@
+.storyRoot {
+  position: relative;
+  min-height: 100svh;
+}
+
+.sectionMount {
+  min-height: 100svh;
+}
+
+.nextSectionPlaceholder {
+  min-height: 100svh;
+  background: linear-gradient(180deg, #2d000f 0%, #180008 100%);
+}

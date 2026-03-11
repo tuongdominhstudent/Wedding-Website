@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+.env
+*.log
+
+client/node_modules
+client/dist
+client/.env.local
+
+server/node_modules
+server/.env
+server/data/*.sqlite
+server/data/*.sqlite-shm
+server/data/*.sqlite-wal

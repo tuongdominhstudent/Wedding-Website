@@ -1,0 +1,17 @@
+.layout {
+  position: relative;
+  min-height: 100svh;
+}
+
+.canvasLayer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+}
+
+.storyLayer {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100svh;
+}

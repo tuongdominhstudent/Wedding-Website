@@ -1,0 +1,60 @@
+:root {
+  --color-brand-mist: #ffe6d1;
+  --color-brand-taupe: #9d806e;
+  --color-brand-clay: #724032;
+  --color-brand-wine: #490018;
+  --color-brand-burgundy: #320010;
+
+  --color-surface-base: #fffaf6;
+  --color-surface-elevated: #fff2e8;
+  --color-text-primary: #320010;
+  --color-text-secondary: #724032;
+  --color-border-soft: rgb(50 0 16 / 12%);
+
+  --font-family-body: 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-family-display: 'Iowan Old Style', 'Baskerville', 'Times New Roman', serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.75rem;
+  --font-size-2xl: clamp(2rem, 5vw, 3rem);
+  --line-height-tight: 1.1;
+  --line-height-base: 1.5;
+  --line-height-loose: 1.75;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+
+  --z-base: 1;
+  --z-canvas: 10;
+  --z-content: 20;
+  --z-overlay: 100;
+  --z-modal: 1000;
+
+  --duration-fast: 280ms;
+  --duration-base: 600ms;
+  --duration-slow: 1000ms;
+  --easing-standard: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --easing-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --container-max-width: 80rem;
+  --header-offset: 4rem;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --header-offset: 5rem;
+  }
+}
