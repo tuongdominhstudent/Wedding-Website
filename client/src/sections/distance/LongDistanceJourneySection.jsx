@@ -5,6 +5,10 @@ import LongDistanceGlobeScene from './LongDistanceGlobeScene';
 import { LONG_DISTANCE_SECTION } from './longDistanceJourney.constants';
 import styles from './LongDistanceJourneySection.module.css';
 import heroImage from '../../assets/weddingPhotos/hero.webp';
+import invitationImage from '../../assets/weddingPhotos/1.webp';
+import shapeImage from '../../assets/weddingPhotos/2.webp';
+import brideImage from '../../assets/weddingPhotos/bride.webp';
+import groomImage from '../../assets/weddingPhotos/groom.webp';
 
 function buildLineState(progress) {
   const thresholds = LONG_DISTANCE_SECTION.revealThresholds;
@@ -112,80 +116,132 @@ function LongDistanceJourneySection() {
   }, []);
 
   return (
-    <section
-      id="long-distance-journey"
-      className={styles.section}
-      aria-label="Long distance journey from Hanoi to Moscow"
-    >
-      <div className={styles.stage}>
-        <div className={styles.copyColumn}>
-          <div className={styles.copyStack}>
-            <div className={`${styles.textLine} ${lineState.distanceVisible ? styles.textLineActive : ''}`}>
-              <div className={styles.statLine}>
-                Hơn 9000<span className={styles.unit}>km</span>
+    <>
+      <section
+        id="long-distance-journey"
+        className={styles.section}
+        aria-label="Long distance journey from Hanoi to Moscow"
+      >
+        <div className={styles.stage}>
+          <div className={styles.copyColumn}>
+            <div className={styles.copyStack}>
+              <div className={`${styles.textLine} ${lineState.distanceVisible ? styles.textLineActive : ''}`}>
+                <div className={styles.statLine}>
+                  Hơn 9000<span className={styles.unit}>km</span>
+                </div>
+              </div>
+
+              <div className={`${styles.textLine} ${lineState.tripsVisible ? styles.textLineActive : ''}`}>
+                <div className={styles.statLine}>
+                  {lineState.tripsValue}<span className={styles.unit}>chuyến đi</span>
+                </div>
+              </div>
+
+              <div className={`${styles.textLine} ${lineState.daysVisible ? styles.textLineActive : ''}`}>
+                <div className={styles.statLine}>
+                  {lineState.daysValue}<span className={styles.unit}>ngày yêu xa</span>
+                </div>
+              </div>
+
+              <div className={`${styles.textLine} ${lineState.homeVisible ? styles.textLineActive : ''}`}>
+                <div className={styles.finalLine}>
+                  <span>Và chúng ta đã về </span>
+                  <span className={styles.finalLineBreak}>chung một nhà</span>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className={`${styles.textLine} ${lineState.tripsVisible ? styles.textLineActive : ''}`}>
-              <div className={styles.statLine}>
-                {lineState.tripsValue}<span className={styles.unit}>chuyến đi</span>
-              </div>
-            </div>
-
-            <div className={`${styles.textLine} ${lineState.daysVisible ? styles.textLineActive : ''}`}>
-              <div className={styles.statLine}>
-                {lineState.daysValue}<span className={styles.unit}>ngày yêu xa</span>
-              </div>
-            </div>
-
-            <div className={`${styles.textLine} ${lineState.homeVisible ? styles.textLineActive : ''}`}>
-              <div className={styles.finalLine}>
-                <span>Và chúng ta đã về </span>
-                <span className={styles.finalLineBreak}>chung một nhà</span>
-              </div>
+          <div className={styles.sceneColumn}>
+            <div className={styles.canvasFrame} ref={canvasFrameRef}>
+              <Canvas
+                className={styles.globeCanvas}
+                camera={{ position: [0.3, 0.12, 8.2], fov: 28 }}
+                dpr={[1, 1.8]}
+                gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+              >
+                <Suspense fallback={null}>
+                  <LongDistanceGlobeScene progress={progress} isMobile={isMobile} onMoscowPos={handleMoscowPos} />
+                </Suspense>
+              </Canvas>
             </div>
           </div>
         </div>
 
-        <div className={styles.sceneColumn}>
-          <div className={styles.canvasFrame} ref={canvasFrameRef}>
-            <Canvas
-              className={styles.globeCanvas}
-              camera={{ position: [0.3, 0.12, 8.2], fov: 28 }}
-              dpr={[1, 1.8]}
-              gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-            >
-              <Suspense fallback={null}>
-                <LongDistanceGlobeScene progress={progress} isMobile={isMobile} onMoscowPos={handleMoscowPos} />
-              </Suspense>
-            </Canvas>
+        {fillFactor > 0 && (
+          <div
+            className={styles.fillOverlay}
+            style={{
+              clipPath: `circle(${
+                Math.hypot(window.innerWidth, window.innerHeight) * 1.1 * fillFactor
+              }px at ${moscowPosRef.current.x}px ${moscowPosRef.current.y}px)`
+            }}
+          >
+            <div className={styles.heroPanel}>
+              <img
+                src={heroImage}
+                alt=""
+                className={styles.heroImage}
+                style={{ opacity: Math.max(0, Math.min(1, (fillFactor - 0.3) / 0.7)) }}
+              />
+              <div className={`${styles.textOverlay} ${textVisible ? styles.textOverlayVisible : ''}`}>
+                <p className={styles.saveTheDate}>Save the Date</p>
+                <p className={styles.ourLabel}>Our</p>
+                <h1 className={styles.weddingTitle}>WEDDING</h1>
+                <p className={styles.coupleName}>Minh Tường — Thảo Nguyên</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
+      </section>
 
-      {fillFactor > 0 && (
-        <div
-          className={styles.fillOverlay}
-          style={{
-            clipPath: `circle(${
-              Math.hypot(window.innerWidth, window.innerHeight) * 1.1 * fillFactor
-            }px at ${moscowPosRef.current.x}px ${moscowPosRef.current.y}px)`
-          }}
-        >
-          <img
-            src={heroImage}
-            alt=""
-            className={styles.heroImage}
-            style={{ opacity: Math.max(0, Math.min(1, (fillFactor - 0.3) / 0.7)) }}
-          />
-          <div className={`${styles.textOverlay} ${textVisible ? styles.textOverlayVisible : ''}`}>
-            <p className={styles.saveTheDate}>Save the Date</p>
-            <h1 className={styles.weddingTitle}>WEDDING</h1>
-            <p className={styles.coupleName}>Minh Tường — Thảo Nguyên</p>
-          </div>
+      <section className={styles.postSection} aria-label="Wedding invitation details">
+        <div className={styles.invitationSection} aria-label="Wedding invitation section">
+          <p className={styles.invitationLabel}>WEDDING INVITATION 2027</p>
         </div>
-      )}
-    </section>
+
+        <div className={styles.invitationImageSection} aria-label="Wedding invitation photo">
+          <img src={invitationImage} alt="Wedding invitation portrait" className={styles.invitationImage} />
+        </div>
+
+        <div className={styles.shapeSection} aria-label="Everything shape section">
+          <h2 className={styles.shapeTitle}>EVERYTHINGSHAPE</h2>
+          <img src={shapeImage} alt="Editorial wedding portrait" className={styles.shapeImage} />
+        </div>
+
+        <section className={styles.invitationDetailSection} aria-label="Invitation details">
+          <div className={styles.invitationHeader}>
+            <p className={styles.invitationKicker}>THƯ MỜI TIỆC CƯỚI</p>
+            <div className={styles.invitationDivider} aria-hidden="true" />
+            <p className={styles.invitationTime}>THỨ BẢY - 10:00</p>
+            <p className={styles.invitationDate}>10/7/2027</p>
+            <div className={styles.invitationDivider} aria-hidden="true" />
+          </div>
+
+          <div className={styles.invitationSplit}>
+            <article className={styles.invitationSide}>
+              <p className={styles.invitationSideLabel}>NHÀ GÁI</p>
+              <img src={brideImage} alt="Bride portrait" className={styles.invitationPortrait} />
+              <p className={styles.invitationRole}>BRIDE</p>
+            </article>
+
+            <article className={styles.invitationSide}>
+              <p className={styles.invitationSideLabel}>NHÀ TRAI</p>
+              <img src={groomImage} alt="Groom portrait" className={styles.invitationPortrait} />
+              <p className={styles.invitationRole}>GROOM</p>
+            </article>
+          </div>
+
+          <p className={styles.invitationNames}>
+            <span>Thảo Nguyên</span>
+            <span className={styles.heartIcon} aria-hidden="true">♥</span>
+            <span>Minh Tường</span>
+          </p>
+
+          <p className={styles.invitationSignature}>Everythingshape</p>
+        </section>
+      </section>
+    </>
   );
 }
 

@@ -1,7 +1,8 @@
 .section {
   position: relative;
   min-height: 100svh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   background:
     radial-gradient(circle at 12% 16%, rgb(255 230 209 / 0.15), transparent 28%),
     radial-gradient(circle at 82% 28%, rgb(157 128 110 / 0.14), transparent 30%),
@@ -106,11 +107,19 @@
 
 .fillOverlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100svh;
   z-index: var(--z-overlay);
   background: #ffe6d1;
   pointer-events: none;
   will-change: clip-path;
+}
+
+.heroPanel {
+  position: relative;
+  height: 100%;
 }
 
 .heroImage {
@@ -131,6 +140,212 @@
   justify-content: center;
   gap: 0.75rem;
   pointer-events: none;
+}
+
+.postSection {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+}
+
+.ourLabel {
+  margin: 0 0 -1.2rem;
+  color: #ffffff;
+  font-family: 'Snell Roundhand', 'Apple Chancery', 'Zapfino', 'Times New Roman', cursive;
+  font-size: clamp(3.4rem, 8vw, 6.4rem);
+  font-weight: 400;
+  line-height: 1;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.18);
+  opacity: 0;
+  transform: translateY(0.6rem) rotate(-4deg);
+  transition:
+    opacity 1.6s var(--easing-standard) 0.55s,
+    transform 1.6s var(--easing-standard) 0.55s;
+}
+
+.invitationSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(4.5rem, 8vw, 6.5rem);
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-top: 1px solid rgb(146 108 87 / 0.18);
+}
+
+.invitationImageSection {
+  position: relative;
+  background: #f6e3d2;
+}
+
+.invitationImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100svh;
+  object-fit: cover;
+  object-position: center;
+}
+
+.shapeSection {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(1.5rem, 4vw, 3rem);
+  background: #ffffff;
+}
+
+.shapeTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(3rem, 6vw, 4.5rem);
+  color: #000000;
+  font-family: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Didot LT STD', 'Times New Roman', serif;
+  font-size: clamp(2.2rem, 5.8vw, 5.25rem);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translateY(-0.3em);
+}
+
+.shapeImage {
+  display: block;
+  width: min(80vw, 80rem);
+  max-width: calc(100vw - 2rem);
+  height: auto;
+  object-fit: cover;
+}
+
+.invitationDetailSection {
+  padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem) clamp(4.5rem, 9vw, 7.5rem);
+  background: #ffffff;
+  color: #000000;
+}
+
+.invitationHeader {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.invitationKicker,
+.invitationTime,
+.invitationDate,
+.invitationSideLabel,
+.invitationRole,
+.invitationNames,
+.invitationSignature {
+  margin: 0;
+}
+
+.invitationKicker {
+  font-family: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Didot LT STD', 'Times New Roman', serif;
+  font-size: clamp(1.7rem, 3.3vw, 2.8rem);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.invitationDivider {
+  width: min(20rem, 42vw);
+  height: 1px;
+  background: rgb(0 0 0 / 0.22);
+}
+
+.invitationTime,
+.invitationDate {
+  font-family: 'EB Garamond', 'Baskerville', 'Palatino Linotype', serif;
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.invitationSplit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+  max-width: 72rem;
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+}
+
+.invitationSide {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.invitationSideLabel {
+  font-family: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Didot LT STD', 'Times New Roman', serif;
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.invitationPortrait {
+  display: block;
+  width: min(100%, 33rem);
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center;
+}
+
+.invitationRole {
+  font-family: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Didot LT STD', 'Times New Roman', serif;
+  font-size: clamp(1.08rem, 2.15vw, 1.6rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.invitationNames {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  font-family: 'EB Garamond', 'Baskerville', 'Palatino Linotype', serif;
+  font-size: clamp(1.45rem, 2.9vw, 2.25rem);
+  font-style: italic;
+  text-align: center;
+}
+
+.heartIcon {
+  color: #8b1e3f;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.invitationSignature {
+  margin-top: 1rem;
+  text-align: center;
+  font-family: 'EB Garamond', 'Baskerville', 'Palatino Linotype', serif;
+  font-size: clamp(1.1rem, 2.1vw, 1.5rem);
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.invitationLabel {
+  margin: 0;
+  color: #000000;
+  font-family: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Didot LT STD', 'Times New Roman', serif;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .saveTheDate {
@@ -169,10 +384,13 @@
 
 .coupleName {
   color: #ffffff;
-  font-family: var(--font-family-body);
-  font-size: clamp(1rem, 2.4vw, 1.45rem);
-  font-weight: 300;
-  letter-spacing: 0.22em;
+  font-family: 'EB Garamond', 'Baskerville', 'Palatino Linotype', 'Times New Roman', serif;
+  font-size: clamp(1.28rem, 3vw, 1.95rem);
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  text-transform: none;
   text-shadow:
     0 1px 4px rgb(0 0 0 / 0.45),
     0 4px 24px rgb(0 0 0 / 0.2);
@@ -182,6 +400,11 @@
 
 .textOverlayVisible .saveTheDate {
   opacity: 1;
+}
+
+.textOverlayVisible .ourLabel {
+  opacity: 1;
+  transform: translateY(0) rotate(-4deg);
 }
 
 .textOverlayVisible .weddingTitle {
@@ -225,5 +448,102 @@
 
   .sceneColumn {
     min-height: 60svh;
+  }
+
+  .section {
+    min-height: 100svh;
+  }
+
+  .invitationSection {
+    min-height: clamp(4rem, 14vw, 5.2rem);
+    padding-inline: 1rem;
+  }
+
+  .invitationImage {
+    min-height: auto;
+  }
+
+  .shapeSection {
+    gap: 1.25rem;
+    padding: 1.5rem 1rem 1.25rem;
+  }
+
+  .shapeTitle {
+    min-height: 2.3rem;
+    font-size: clamp(1.2rem, 5.6vw, 1.8rem);
+    letter-spacing: 0.06em;
+    transform: translateY(-0.1em);
+  }
+
+  .shapeImage {
+    width: min(72vw, 32rem);
+    max-width: 100%;
+  }
+
+  .invitationDetailSection {
+    padding: 1.75rem 1rem 4rem;
+  }
+
+  .invitationHeader {
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .invitationKicker {
+    font-size: clamp(1.22rem, 6vw, 1.7rem);
+    letter-spacing: 0.14em;
+  }
+
+  .invitationDivider {
+    width: min(14rem, 58vw);
+  }
+
+  .invitationTime,
+  .invitationDate {
+    font-size: clamp(1.08rem, 5vw, 1.5rem);
+    letter-spacing: 0.04em;
+  }
+
+  .invitationSplit {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .invitationSide {
+    gap: 0.8rem;
+  }
+
+  .invitationSideLabel {
+    font-size: clamp(1.12rem, 5.2vw, 1.5rem);
+  }
+
+  .invitationPortrait {
+    width: min(100%, 13rem);
+  }
+
+  .invitationRole {
+    font-size: clamp(0.96rem, 4.2vw, 1.18rem);
+    letter-spacing: 0.12em;
+  }
+
+  .invitationNames {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    font-size: clamp(1.16rem, 5.2vw, 1.55rem);
+  }
+
+  .invitationSignature {
+    font-size: clamp(1rem, 4.2vw, 1.2rem);
+  }
+
+  .invitationLabel {
+    font-size: clamp(0.86rem, 3.6vw, 1.08rem);
+    letter-spacing: 0.24em;
+  }
+
+  .ourLabel {
+    margin-bottom: -0.7rem;
+    font-size: clamp(2.4rem, 14vw, 4.2rem);
   }
 }
