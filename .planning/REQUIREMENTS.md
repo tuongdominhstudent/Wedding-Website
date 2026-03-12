@@ -8,7 +8,7 @@
 ### Story Experience
 
 - [ ] **STORY-01**: Guest can progress from the opening experience into the rest of the invitation even if video autoplay fails or is skipped
-- [ ] **STORY-02**: Guest can view the completed story flow on mobile, including the existing intro, firsts, and long-distance sections plus the remaining v1 sections
+- [ ] **STORY-02**: Guest can move from the intro into the currently implemented story flow on mobile, and that flow remains compatible with additional v1 sections added later
 - [ ] **STORY-03**: Guest can view a dedicated prewedding video section using `preweddingVideo.webm`
 - [ ] **STORY-04**: Guest can view additional wedding-photo content presented with an elegant wedding-date calendar design
 
