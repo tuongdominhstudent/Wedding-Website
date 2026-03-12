@@ -4,6 +4,7 @@ import flowerAsset from '../../assets/firsts/flower.webp';
 import hangOutAsset from '../../assets/firsts/hangOut.webp';
 import holdHandAsset from '../../assets/firsts/holdHand.webp';
 import tripAsset from '../../assets/firsts/trip.webp';
+import { getSectionPreloadStrategy } from '../../config/sectionRegistry';
 
 export const FIRSTS_ASSETS = Object.freeze({
   rider: ridingAsset,
@@ -27,14 +28,20 @@ function preloadImage(src) {
 }
 
 export function registerFirstsAssets(registry) {
+  const tier = getSectionPreloadStrategy('firsts');
+
   registry.register({
     id: 'firsts-rider-image',
+    sectionId: 'firsts',
+    tier,
     load: () => preloadImage(FIRSTS_ASSETS.rider)
   });
 
   Object.entries(FIRSTS_ASSETS.milestonePhotos).forEach(([key, src]) => {
     registry.register({
       id: `firsts-milestone-${key}`,
+      sectionId: 'firsts',
+      tier,
       load: () => preloadImage(src)
     });
   });

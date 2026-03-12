@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { gsap, initializeGsap, ScrollTrigger } from '../motion/gsap/gsapConfig';
 import { createLenis } from '../motion/scroll/createLenis';
 import { PRELOADER_CONFIG } from '../config/preloaderConfig';
-import { AssetRegistry } from '../services/assets/assetRegistry';
+import { AssetRegistry, ASSET_TIER } from '../services/assets/assetRegistry';
 import { AssetLoader } from '../services/assets/assetLoader';
 import { registerLongDistanceAssets } from '../sections/distance/longDistanceJourneyAssets';
 import { registerFirstsAssets } from '../sections/firsts/firstsJourneyAssets';
 import { registerIntroAssets } from '../sections/intro/introAssets';
-import { BOOT_PHASE, useAppStore } from '../stores/useAppStore';
+import { BOOT_PHASE, DEFERRED_ASSET_PHASE, useAppStore } from '../stores/useAppStore';
 
 function wait(ms) {
   return new Promise((resolve) => {
@@ -33,9 +33,14 @@ export function useAppBootstrap() {
   const setAssetLoader = useAppStore((state) => state.setAssetLoader);
   const setReducedMotion = useAppStore((state) => state.setReducedMotion);
   const setBootError = useAppStore((state) => state.setBootError);
+  const setDeferredAssetPhase = useAppStore((state) => state.setDeferredAssetPhase);
+  const setDeferredAssetProgress = useAppStore((state) => state.setDeferredAssetProgress);
+  const setDeferredAssetError = useAppStore((state) => state.setDeferredAssetError);
+  const setDeferredAssetLoader = useAppStore((state) => state.setDeferredAssetLoader);
 
   useEffect(() => {
     let isCancelled = false;
+    let deferredLoadPromise = null;
     const previousScrollRestoration = window.history.scrollRestoration;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -78,8 +83,44 @@ export function useAppBootstrap() {
     setAssetRegistry(registry);
     setAssetLoader(loader);
 
+    const loadDeferredAssets = async () => {
+      if (deferredLoadPromise) {
+        return deferredLoadPromise;
+      }
+
+      setDeferredAssetPhase(DEFERRED_ASSET_PHASE.LOADING);
+      setDeferredAssetProgress(0);
+
+      deferredLoadPromise = window
+        .Promise.resolve()
+        .then(() =>
+          loader.loadByTier(ASSET_TIER.DEFERRED, (progress) => {
+            setDeferredAssetProgress(progress);
+          })
+        )
+        .then((results) => {
+          if (!isCancelled) {
+            setDeferredAssetProgress(1);
+            setDeferredAssetPhase(DEFERRED_ASSET_PHASE.READY);
+          }
+
+          return results;
+        })
+        .catch((error) => {
+          if (!isCancelled) {
+            setDeferredAssetError(error);
+          }
+
+          throw error;
+        });
+
+      return deferredLoadPromise;
+    };
+
+    setDeferredAssetLoader(loadDeferredAssets);
+
     Promise.all([
-      loader.loadAll((progress) => {
+      loader.loadByTier(ASSET_TIER.BLOCKING, (progress) => {
         setBootProgress(progress);
       }),
       wait(PRELOADER_CONFIG.simulatedMinDurationMs)
@@ -109,6 +150,7 @@ export function useAppBootstrap() {
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = previousScrollRestoration;
       }
+      setDeferredAssetLoader(async () => []);
       setLenisInstance(null);
     };
   }, [
@@ -117,6 +159,10 @@ export function useAppBootstrap() {
     setBootError,
     setBootPhase,
     setBootProgress,
+    setDeferredAssetError,
+    setDeferredAssetLoader,
+    setDeferredAssetPhase,
+    setDeferredAssetProgress,
     setLenisInstance,
     setReducedMotion
   ]);

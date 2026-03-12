@@ -3,8 +3,7 @@ export class AssetLoader {
     this.registry = registry;
   }
 
-  async loadAll(onProgress) {
-    const assets = this.registry.list();
+  async loadAssets(assets, onProgress) {
     const total = assets.length;
 
     if (typeof onProgress === 'function') {
@@ -29,5 +28,13 @@ export class AssetLoader {
     }
 
     return results;
+  }
+
+  async loadAll(onProgress) {
+    return this.loadAssets(this.registry.list(), onProgress);
+  }
+
+  async loadByTier(tier, onProgress) {
+    return this.loadAssets(this.registry.list({ tier }), onProgress);
   }
 }

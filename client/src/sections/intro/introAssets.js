@@ -2,6 +2,7 @@ import introVideo from '../../assets/firstMeet.webm';
 import introLastFrame from '../../assets/lastFrame.webp';
 import introLeftImage from '../../assets/left.webp';
 import introRightImage from '../../assets/right.webp';
+import { getSectionPreloadStrategy } from '../../config/sectionRegistry';
 
 export const INTRO_ASSETS = Object.freeze({
   video: introVideo,
@@ -48,23 +49,33 @@ function preloadVideo(src) {
 }
 
 export function registerIntroAssets(registry) {
+  const tier = getSectionPreloadStrategy('intro');
+
   registry.register({
     id: 'intro-video',
+    sectionId: 'intro',
+    tier,
     load: () => preloadVideo(INTRO_ASSETS.video)
   });
 
   registry.register({
     id: 'intro-last-frame-image',
+    sectionId: 'intro',
+    tier,
     load: () => preloadImage(INTRO_ASSETS.lastFrame)
   });
 
   registry.register({
     id: 'intro-left-image',
+    sectionId: 'intro',
+    tier,
     load: () => preloadImage(INTRO_ASSETS.leftImage)
   });
 
   registry.register({
     id: 'intro-right-image',
+    sectionId: 'intro',
+    tier,
     load: () => preloadImage(INTRO_ASSETS.rightImage)
   });
 }

@@ -1,3 +1,8 @@
+export const ASSET_TIER = Object.freeze({
+  BLOCKING: 'blocking',
+  DEFERRED: 'deferred'
+});
+
 export class AssetRegistry {
   constructor() {
     this.items = new Map();
@@ -12,7 +17,15 @@ export class AssetRegistry {
       throw new Error(`Asset with id "${asset.id}" is already registered`);
     }
 
-    this.items.set(asset.id, asset);
+    const tier = asset.tier ?? ASSET_TIER.BLOCKING;
+    if (!Object.values(ASSET_TIER).includes(tier)) {
+      throw new Error(`Asset "${asset.id}" must use a valid tier`);
+    }
+
+    this.items.set(asset.id, {
+      ...asset,
+      tier
+    });
   }
 
   unregister(assetId) {
@@ -23,7 +36,19 @@ export class AssetRegistry {
     this.items.clear();
   }
 
-  list() {
-    return Array.from(this.items.values());
+  list(filters = {}) {
+    const { tier, sectionId } = filters;
+
+    return Array.from(this.items.values()).filter((asset) => {
+      if (tier && asset.tier !== tier) {
+        return false;
+      }
+
+      if (sectionId && asset.sectionId !== sectionId) {
+        return false;
+      }
+
+      return true;
+    });
   }
 }
