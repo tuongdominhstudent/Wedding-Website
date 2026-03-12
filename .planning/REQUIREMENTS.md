@@ -61,26 +61,26 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STORY-01 | Phase TBD | Pending |
-| STORY-02 | Phase TBD | Pending |
-| STORY-03 | Phase TBD | Pending |
-| STORY-04 | Phase TBD | Pending |
-| EVENT-01 | Phase TBD | Pending |
-| EVENT-02 | Phase TBD | Pending |
-| EVENT-03 | Phase TBD | Pending |
-| GUEST-01 | Phase TBD | Pending |
-| GUEST-02 | Phase TBD | Pending |
-| GUEST-03 | Phase TBD | Pending |
-| GUEST-04 | Phase TBD | Pending |
-| GIFT-01 | Phase TBD | Pending |
-| QUAL-01 | Phase TBD | Pending |
-| QUAL-02 | Phase TBD | Pending |
+| STORY-01 | Phase 1 | Pending |
+| STORY-02 | Phase 1 | Pending |
+| STORY-03 | Phase 2 | Pending |
+| STORY-04 | Phase 2 | Pending |
+| EVENT-01 | Phase 2 | Pending |
+| EVENT-02 | Phase 2 | Pending |
+| EVENT-03 | Phase 2 | Pending |
+| GUEST-01 | Phase 3 | Pending |
+| GUEST-02 | Phase 4 | Pending |
+| GUEST-03 | Phase 3 | Pending |
+| GUEST-04 | Phase 5 | Pending |
+| GIFT-01 | Phase 2 | Pending |
+| QUAL-01 | Phase 1 | Pending |
+| QUAL-02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after initialization*
+*Last updated: 2026-03-13 after roadmap creation*
