@@ -20,7 +20,11 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
   const curvedLabelRef = useRef(null);
   const titleRef = useRef(null);
   const indicatorRef = useRef(null);
+  const escapeButtonRef = useRef(null);
   const revealTimelineRef = useRef(null);
+  const revealFallbackTimerRef = useRef(null);
+  const ignoreNextPauseRef = useRef(false);
+  const hasQueuedAutoRevealRef = useRef(false);
   const hasRevealedRef = useRef(false);
   const hasExitedRef = useRef(false);
 
@@ -30,6 +34,7 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
   const [showEscapeAction, setShowEscapeAction] = useState(false);
   const [showFallbackStill, setShowFallbackStill] = useState(false);
   const hasArmedUnmuteRef = useRef(false);
+  const shouldHideVideoLayer = showFallbackStill && phase === 'fallback';
 
   useEffect(() => {
     if (!isBootReady || !lenisInstance || isSequenceDone) {
@@ -78,9 +83,26 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
       return;
     }
 
+    if (revealFallbackTimerRef.current) {
+      window.clearTimeout(revealFallbackTimerRef.current);
+      revealFallbackTimerRef.current = null;
+    }
+
     hasExitedRef.current = true;
     setIsSequenceDone(true);
     onSequenceComplete?.(reason);
+  };
+
+  const finalizeReveal = (reason) => {
+    if (hasExitedRef.current) {
+      return;
+    }
+
+    setShowEscapeAction(false);
+    setPhase('final');
+    setIsSequenceDone(true);
+    setShowIndicator(true);
+    completeIntroExit(reason);
   };
 
   const attemptVideoPlay = () => {
@@ -97,6 +119,45 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
         setPhase('fallback');
         setShowFallbackStill(true);
       });
+    }
+  };
+
+  const pauseVideoSafely = () => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    ignoreNextPauseRef.current = true;
+    video.pause();
+  };
+
+  const handleUnexpectedPause = () => {
+    if (ignoreNextPauseRef.current) {
+      ignoreNextPauseRef.current = false;
+      return;
+    }
+
+    if (phase !== 'video' || hasRevealedRef.current || hasExitedRef.current || showFallbackStill) {
+      return;
+    }
+
+    attemptVideoPlay();
+  };
+
+  const handleVideoTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video || hasQueuedAutoRevealRef.current || hasRevealedRef.current || hasExitedRef.current) {
+      return;
+    }
+
+    if (!Number.isFinite(video.duration) || video.duration <= 0) {
+      return;
+    }
+
+    if (video.duration - video.currentTime <= INTRO_SEQUENCE.autoRevealLeadTimeSec) {
+      hasQueuedAutoRevealRef.current = true;
+      runRevealSequence('completed');
     }
   };
 
@@ -162,13 +223,27 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
     return () => observer.disconnect();
   }, [isSequenceDone]);
 
-  const runRevealSequence = () => {
-    if (!videoRef.current || !videoShellRef.current || hasRevealedRef.current || hasExitedRef.current) {
+  const runRevealSequence = (exitReason = 'completed') => {
+    if (!videoShellRef.current || hasRevealedRef.current || hasExitedRef.current) {
       return;
     }
 
     hasRevealedRef.current = true;
-    setPhase('revealing');
+    hasQueuedAutoRevealRef.current = true;
+    const isSkipped = exitReason === 'skipped';
+    if (!isSkipped) {
+      setShowFallbackStill(true);
+    }
+    const durationScale = isSkipped ? INTRO_SEQUENCE.skipRevealDurationScale : 1;
+    const safetyTimeoutMs = isSkipped
+      ? INTRO_SEQUENCE.skipRevealSafetyTimeoutMs
+      : INTRO_SEQUENCE.revealSafetyTimeoutMs;
+    const centerCardStartAt = isSkipped ? `-=${0.45 * durationScale}` : '>';
+    const leftCardStartAt = isSkipped ? `-=${0.5 * durationScale}` : `-=${0.08 * durationScale}`;
+    const videoFadeStartAt = isSkipped ? `-=${0.12 * durationScale}` : '<';
+    const videoFadeDuration = isSkipped ? 0.32 * durationScale : 0.24 * durationScale;
+    const buttonFadeStartAt = isSkipped ? 0.12 : 0.72;
+    const buttonFadeDuration = isSkipped ? 0.16 : 0.2;
 
     const video = videoRef.current;
     const isMobile = window.matchMedia('(max-width: 48rem)').matches;
@@ -207,9 +282,8 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
       ? INTRO_SEQUENCE.videoCardShiftYMobile
       : INTRO_SEQUENCE.videoCardShiftYDesktop;
 
-    video.pause();
-    if (Number.isFinite(video.duration) && video.duration > 0) {
-      video.currentTime = Math.max(0, video.duration - 0.04);
+    if (video && !isSkipped) {
+      pauseVideoSafely();
     }
 
     const ringLength = ringPathRef.current?.getTotalLength?.() || 0;
@@ -245,20 +319,27 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
       defaults: {
         ease: 'power3.inOut'
       },
-      onComplete: () => {
-        setPhase('final');
-        setIsSequenceDone(true);
-        setShowIndicator(true);
-        completeIntroExit('completed');
-      }
+      onComplete: () => finalizeReveal(exitReason)
     });
 
+    revealFallbackTimerRef.current = window.setTimeout(() => {
+      finalizeReveal(exitReason);
+    }, safetyTimeoutMs);
+
     revealTimelineRef.current
+      .to(
+        escapeButtonRef.current,
+        {
+          autoAlpha: 0,
+          duration: buttonFadeDuration
+        },
+        buttonFadeStartAt
+      )
       .to(videoShellRef.current, {
         scale: centerScale,
         x: stackShiftX + centerShiftX,
         y: centerShiftY,
-        duration: 1.3,
+        duration: 1.3 * durationScale,
         borderRadius: 24
       })
       .to(
@@ -269,17 +350,17 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
           x: stackShiftX + centerCardShiftX,
           y: centerCardShiftY,
           scale: 1,
-          duration: 0.55
+          duration: 0.55 * durationScale
         },
-        '-=0.45'
+        centerCardStartAt
       )
       .to(
         videoShellRef.current,
         {
           autoAlpha: 0,
-          duration: 0.45
+          duration: videoFadeDuration
         },
-        '<'
+        videoFadeStartAt
       )
       .to(
         leftCardRef.current,
@@ -290,10 +371,10 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
           y: centerCardShiftY - sideCardLift + photoShiftY,
           rotation: -14,
           scale: 1,
-          duration: 1.4,
+          duration: 1.4 * durationScale,
           ease: 'expo.out'
         },
-        '-=0.5'
+        leftCardStartAt
       )
       .to(
         rightCardRef.current,
@@ -304,7 +385,7 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
           y: centerCardShiftY + sideCardDrop + photoShiftY,
           rotation: 12,
           scale: 1,
-          duration: 1.4,
+          duration: 1.4 * durationScale,
           ease: 'expo.out'
         },
         '<'
@@ -315,19 +396,19 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
           autoAlpha: 1,
           y: 0,
           strokeDashoffset: 0,
-          duration: INTRO_SEQUENCE.ringDrawDuration,
+          duration: INTRO_SEQUENCE.ringDrawDuration * durationScale,
           ease: 'power2.out'
         },
-        '-=1.1'
+        `-=${1.1 * durationScale}`
       )
       .to(
         curvedLabelRef.current,
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.7
+          duration: 0.7 * durationScale
         },
-        '-=0.95'
+        `-=${0.95 * durationScale}`
       )
       .to(
         titleRef.current,
@@ -337,39 +418,34 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
           yPercent: -50,
           x: 0,
           y: 0,
-          duration: 0.85
+          duration: 0.85 * durationScale
         },
-        '-=0.5'
+        `-=${0.5 * durationScale}`
       )
       .to(
         indicatorRef.current,
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.65
+          duration: 0.65 * durationScale
         },
-        '-=0.15'
+        `-=${0.15 * durationScale}`
       );
   };
 
   useEffect(
     () => () => {
+      if (revealFallbackTimerRef.current) {
+        window.clearTimeout(revealFallbackTimerRef.current);
+      }
       revealTimelineRef.current?.kill();
     },
     []
   );
 
   const handleEscapeAction = () => {
-    const video = videoRef.current;
     revealTimelineRef.current?.kill();
-    if (video) {
-      video.pause();
-    }
-
-    setPhase('fallback');
-    setShowFallbackStill(true);
-    setShowIndicator(true);
-    completeIntroExit('escaped');
+    runRevealSequence('skipped');
   };
 
   const handleVideoFailure = () => {
@@ -379,7 +455,7 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
 
     const video = videoRef.current;
     if (video) {
-      video.pause();
+      pauseVideoSafely();
     }
 
     setPhase('fallback');
@@ -438,34 +514,41 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
         </div>
 
         <div ref={videoShellRef} className={styles.videoShell}>
-          {showFallbackStill ? (
-            <img
-              className={styles.fallbackStill}
-              src={INTRO_ASSETS.lastFrame}
-              alt="Khoanh khac mo dau"
-              loading="eager"
-              decoding="async"
-            />
-          ) : (
-            <video
-              ref={videoRef}
-              className={styles.introVideo}
-              src={INTRO_ASSETS.video}
-              playsInline
-              preload="auto"
-              autoPlay
-              muted
-              onLoadedData={attemptVideoPlay}
-              onEnded={runRevealSequence}
-              onError={handleVideoFailure}
-            />
-          )}
-          {showEscapeAction && !isSequenceDone ? (
-            <button type="button" className={styles.escapeButton} onClick={handleEscapeAction}>
-              {INTRO_SEQUENCE.romanticContinueLabel}
-            </button>
-          ) : null}
+          <img
+            className={`${styles.mediaLayer} ${styles.fallbackStill} ${showFallbackStill ? styles.fallbackStillVisible : ''}`}
+            src={INTRO_ASSETS.lastFrame}
+            alt={showFallbackStill ? 'Khoanh khac mo dau' : ''}
+            aria-hidden={!showFallbackStill}
+            loading="eager"
+            decoding="async"
+          />
+          <video
+            ref={videoRef}
+            className={`${styles.mediaLayer} ${styles.introVideo} ${shouldHideVideoLayer ? styles.videoHidden : ''}`}
+            src={INTRO_ASSETS.video}
+            playsInline
+            preload="auto"
+            autoPlay
+            muted
+            aria-hidden={shouldHideVideoLayer}
+            onLoadedData={attemptVideoPlay}
+            onTimeUpdate={handleVideoTimeUpdate}
+            onEnded={() => runRevealSequence()}
+            onError={handleVideoFailure}
+            onPause={handleUnexpectedPause}
+          />
         </div>
+
+        {showEscapeAction && !isSequenceDone ? (
+          <button
+            ref={escapeButtonRef}
+            type="button"
+            className={styles.escapeButton}
+            onClick={handleEscapeAction}
+          >
+            {INTRO_SEQUENCE.romanticContinueLabel}
+          </button>
+        ) : null}
 
         <h1 ref={titleRef} className={styles.title}>
           Tấm ảnh đầu tiên

@@ -24,5 +24,9 @@ export const INTRO_SEQUENCE = Object.freeze({
   sideCardLiftMobile: 150,
   sideCardDropMobile: 150,
   ringDrawDuration: 1.2,
-  romanticContinueLabel: 'Tiep tuc hanh trinh'
+  autoRevealLeadTimeSec: 0.12,
+  skipRevealDurationScale: 0.42,
+  revealSafetyTimeoutMs: 4500,
+  skipRevealSafetyTimeoutMs: 1800,
+  romanticContinueLabel: 'Skip Intro'
 });

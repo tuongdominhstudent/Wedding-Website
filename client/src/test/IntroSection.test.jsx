@@ -43,7 +43,7 @@ vi.mock('../sections/intro/intro.constants', () => ({
     sideCardLiftMobile: 150,
     sideCardDropMobile: 150,
     ringDrawDuration: 1.2,
-    romanticContinueLabel: 'Tiep tuc hanh trinh'
+    romanticContinueLabel: 'Skip Intro'
   }
 }));
 
@@ -96,20 +96,21 @@ describe('IntroSection', () => {
     document.body.style.touchAction = '';
   });
 
-  it('shows a delayed romantic escape action and unlocks the story without deadlock', async () => {
+  it('shows a delayed skip action and still runs the reveal into story unlock', async () => {
     const onSequenceComplete = vi.fn();
 
     render(<IntroSection isBootReady onSequenceComplete={onSequenceComplete} />);
 
-    expect(screen.queryByRole('button', { name: /tiep tuc hanh trinh/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /skip intro/i })).not.toBeInTheDocument();
 
-    const escapeButton = await screen.findByRole('button', { name: /tiep tuc hanh trinh/i });
+    const escapeButton = await screen.findByRole('button', { name: /skip intro/i });
     fireEvent.click(escapeButton);
 
     await waitFor(() => {
-      expect(onSequenceComplete).toHaveBeenCalledWith('escaped');
+      expect(onSequenceComplete).toHaveBeenCalledWith('skipped');
     });
 
+    expect(screen.getByText('Tấm ảnh đầu tiên')).toBeInTheDocument();
     expect(lenisMock.start).toHaveBeenCalled();
     expect(document.documentElement.style.overflow).toBe('');
     expect(document.body.style.touchAction).toBe('');
