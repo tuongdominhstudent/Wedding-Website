@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollTrigger, gsap } from '../../motion/gsap/gsapConfig';
 import { useAppStore } from '../../stores/useAppStore';
@@ -21,14 +22,17 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
   const indicatorRef = useRef(null);
   const revealTimelineRef = useRef(null);
   const hasRevealedRef = useRef(false);
+  const hasExitedRef = useRef(false);
 
   const [phase, setPhase] = useState('video');
   const [isSequenceDone, setIsSequenceDone] = useState(false);
   const [showIndicator, setShowIndicator] = useState(false);
+  const [showEscapeAction, setShowEscapeAction] = useState(false);
+  const [showFallbackStill, setShowFallbackStill] = useState(false);
   const hasArmedUnmuteRef = useRef(false);
 
   useEffect(() => {
-    if (!isBootReady || !lenisInstance) {
+    if (!isBootReady || !lenisInstance || isSequenceDone) {
       return undefined;
     }
 
@@ -43,7 +47,41 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [isBootReady, lenisInstance]);
+  }, [isBootReady, isSequenceDone, lenisInstance]);
+
+  useEffect(() => {
+    if (!isSequenceDone || !lenisInstance) {
+      return;
+    }
+
+    lenisInstance.start();
+    lenisInstance.resize?.();
+    ScrollTrigger.refresh(true);
+  }, [isSequenceDone, lenisInstance]);
+
+  useEffect(() => {
+    if (!isBootReady || isSequenceDone) {
+      return undefined;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setShowEscapeAction(true);
+    }, INTRO_SEQUENCE.escapeDelayMs);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [isBootReady, isSequenceDone]);
+
+  const completeIntroExit = (reason) => {
+    if (hasExitedRef.current) {
+      return;
+    }
+
+    hasExitedRef.current = true;
+    setIsSequenceDone(true);
+    onSequenceComplete?.(reason);
+  };
 
   const attemptVideoPlay = () => {
     const video = videoRef.current;
@@ -55,7 +93,10 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
     video.muted = true;
     const playPromise = video.play();
     if (playPromise?.then) {
-      playPromise.catch(() => {});
+      playPromise.catch(() => {
+        setPhase('fallback');
+        setShowFallbackStill(true);
+      });
     }
   };
 
@@ -122,7 +163,7 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
   }, [isSequenceDone]);
 
   const runRevealSequence = () => {
-    if (!videoRef.current || !videoShellRef.current || hasRevealedRef.current) {
+    if (!videoRef.current || !videoShellRef.current || hasRevealedRef.current || hasExitedRef.current) {
       return;
     }
 
@@ -208,13 +249,7 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
         setPhase('final');
         setIsSequenceDone(true);
         setShowIndicator(true);
-        onSequenceComplete?.();
-        lenisInstance?.start();
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
-        lenisInstance?.resize?.();
-        ScrollTrigger.refresh(true);
+        completeIntroExit('completed');
       }
     });
 
@@ -324,6 +359,33 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
     []
   );
 
+  const handleEscapeAction = () => {
+    const video = videoRef.current;
+    revealTimelineRef.current?.kill();
+    if (video) {
+      video.pause();
+    }
+
+    setPhase('fallback');
+    setShowFallbackStill(true);
+    setShowIndicator(true);
+    completeIntroExit('escaped');
+  };
+
+  const handleVideoFailure = () => {
+    if (hasExitedRef.current) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+    }
+
+    setPhase('fallback');
+    setShowFallbackStill(true);
+  };
+
   return (
     <section ref={rootRef} className={styles.introSection} data-phase={phase} aria-label="Intro section">
       <div className={styles.landscapeGuard}>
@@ -376,17 +438,33 @@ function IntroSection({ isBootReady, onSequenceComplete }) {
         </div>
 
         <div ref={videoShellRef} className={styles.videoShell}>
-          <video
-            ref={videoRef}
-            className={styles.introVideo}
-            src={INTRO_ASSETS.video}
-            playsInline
-            preload="auto"
-            autoPlay
-            muted
-            onLoadedData={attemptVideoPlay}
-            onEnded={runRevealSequence}
-          />
+          {showFallbackStill ? (
+            <img
+              className={styles.fallbackStill}
+              src={INTRO_ASSETS.lastFrame}
+              alt="Khoanh khac mo dau"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className={styles.introVideo}
+              src={INTRO_ASSETS.video}
+              playsInline
+              preload="auto"
+              autoPlay
+              muted
+              onLoadedData={attemptVideoPlay}
+              onEnded={runRevealSequence}
+              onError={handleVideoFailure}
+            />
+          )}
+          {showEscapeAction && !isSequenceDone ? (
+            <button type="button" className={styles.escapeButton} onClick={handleEscapeAction}>
+              {INTRO_SEQUENCE.romanticContinueLabel}
+            </button>
+          ) : null}
         </div>
 
         <h1 ref={titleRef} className={styles.title}>

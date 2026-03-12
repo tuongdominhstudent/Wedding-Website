@@ -1,5 +1,6 @@
 export const INTRO_SEQUENCE = Object.freeze({
   revealDuration: 3.4,
+  escapeDelayMs: 1600,
   videoCardScaleDesktop: 0.52,
   videoCardScaleMobile: 0.36,
   stackShiftXDesktop: 0,
@@ -22,5 +23,6 @@ export const INTRO_SEQUENCE = Object.freeze({
   sideCardDropDesktop: 268,
   sideCardLiftMobile: 150,
   sideCardDropMobile: 150,
-  ringDrawDuration: 1.2
+  ringDrawDuration: 1.2,
+  romanticContinueLabel: 'Tiep tuc hanh trinh'
 });

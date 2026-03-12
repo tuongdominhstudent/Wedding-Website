@@ -1,11 +1,25 @@
+import React from 'react';
 import { useState } from 'react';
+import { getRegisteredSections } from '../config/sectionRegistry';
 import LongDistanceJourneySection from './distance/LongDistanceJourneySection';
 import FirstsJourneySection from './firsts/FirstsJourneySection';
 import IntroSection from './intro/IntroSection';
 import styles from './StoryRoot.module.css';
 
+const SECTION_COMPONENTS = Object.freeze({
+  firsts: FirstsJourneySection,
+  'long-distance': LongDistanceJourneySection
+});
+
 function StoryRoot({ isBootReady }) {
-  const [isIntroComplete, setIsIntroComplete] = useState(false);
+  const [isStoryUnlocked, setIsStoryUnlocked] = useState(false);
+  const storySections = getRegisteredSections()
+    .filter((section) => section.id !== 'intro')
+    .map((section) => ({
+      ...section,
+      Component: SECTION_COMPONENTS[section.id]
+    }))
+    .filter((section) => typeof section.Component === 'function');
 
   return (
     <section id="story-root" className={styles.storyRoot} aria-label="Wedding story canvas">
@@ -13,11 +27,12 @@ function StoryRoot({ isBootReady }) {
         <IntroSection
           isBootReady={isBootReady}
           onSequenceComplete={() => {
-            setIsIntroComplete(true);
+            setIsStoryUnlocked(true);
           }}
         />
-        {isIntroComplete ? <FirstsJourneySection /> : null}
-        {isIntroComplete ? <LongDistanceJourneySection /> : null}
+        {isStoryUnlocked
+          ? storySections.map(({ id, Component }) => <Component key={id} />)
+          : null}
         <section className={styles.nextSectionPlaceholder} aria-hidden="true" />
       </div>
     </section>
