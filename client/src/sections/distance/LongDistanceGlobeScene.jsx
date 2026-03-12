@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html, Line, useGLTF } from '@react-three/drei';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, CatmullRomCurve3, Group, MathUtils, TextureLoader, Vector3 } from 'three';
+
 import { LONG_DISTANCE_ASSETS } from './longDistanceJourneyAssets';
 import { LONG_DISTANCE_SECTION } from './longDistanceJourney.constants';
 import styles from './LongDistanceGlobeScene.module.css';
@@ -27,6 +28,10 @@ const MOSCOW_VECTOR = latLonToVector3(
   LONG_DISTANCE_SECTION.locations.moscow.lat,
   LONG_DISTANCE_SECTION.locations.moscow.lon,
   LONG_DISTANCE_SECTION.earthSurfaceRadius
+);
+
+const MOSCOW_SURFACE = MOSCOW_VECTOR.clone().setLength(
+  LONG_DISTANCE_SECTION.earthSurfaceRadius + LONG_DISTANCE_SECTION.routeSurfaceOffset
 );
 
 function createRouteCurve() {
@@ -255,12 +260,16 @@ function DestinationGlow({ position, intensity }) {
   );
 }
 
-function LongDistanceGlobeScene({ progress, isMobile }) {
+function LongDistanceGlobeScene({ progress, isMobile, onMoscowPos }) {
   const rootRef = useRef(null);
   const planeAnchorRef = useRef(null);
   const routeCurve = useMemo(() => createRouteCurve(), []);
   const routePoints = useMemo(() => routeCurve.getPoints(140), [routeCurve]);
   const earthTexture = useEmbeddedGlbTexture(LONG_DISTANCE_ASSETS.earthModel);
+
+  // Pre-allocated vectors to avoid per-frame GC during zoom phase
+  const _moscowWorld = useRef(new Vector3());
+  const _lookAt = useRef(new Vector3());
 
   useFrame((state, delta) => {
     if (!rootRef.current || !planeAnchorRef.current) {
@@ -280,8 +289,44 @@ function LongDistanceGlobeScene({ progress, isMobile }) {
     planeAnchorRef.current.position.copy(point);
     planeAnchorRef.current.rotation.set(0, 0, 0);
 
-    state.camera.position.lerp(new Vector3(isMobile ? 0 : 0.3, cameraY, cameraZ), 1 - Math.exp(-delta * 2.2));
-    state.camera.lookAt(0, 0, 0);
+    // Zoom completes at 0.92 so it fully finishes before the fill begins
+    const zoomFactor = MathUtils.clamp((progress - 0.88) / 0.04, 0, 1);
+
+    // FOV narrows toward Moscow for a telephoto zoom-in effect; restores smoothly when scrolling back
+    const targetFov = MathUtils.lerp(28, 4, zoomFactor);
+    if (Math.abs(state.camera.fov - targetFov) > 0.01) {
+      state.camera.fov = MathUtils.damp(state.camera.fov, targetFov, 4, delta);
+      state.camera.updateProjectionMatrix();
+    }
+
+    if (zoomFactor > 0) {
+      rootRef.current.updateMatrixWorld();
+      const moscowWorld = _moscowWorld.current.copy(MOSCOW_SURFACE).applyMatrix4(rootRef.current.matrixWorld);
+
+      // Push camera along the vector toward Moscow on the globe
+      const baseCamX = isMobile ? 0 : 0.3;
+      const toMoscow = moscowWorld.clone().sub(new Vector3(baseCamX, cameraY, cameraZ)).normalize();
+      const zoomAmount = MathUtils.lerp(0, 6.5, zoomFactor);
+      const zoomedPos = new Vector3(baseCamX, cameraY, cameraZ).addScaledVector(toMoscow, zoomAmount);
+
+      state.camera.position.lerp(zoomedPos, 1 - Math.exp(-delta * 3.5));
+
+      _lookAt.current.set(0, 0, 0).lerp(moscowWorld, zoomFactor);
+      state.camera.lookAt(_lookAt.current);
+
+      // Project Moscow into canvas-relative pixel coords for the CSS overlay origin.
+      // The projection must happen after updateProjectionMatrix() for accuracy.
+      if (onMoscowPos) {
+        const ndc = moscowWorld.clone().project(state.camera);
+        onMoscowPos(
+          ((ndc.x + 1) / 2) * state.size.width,
+          ((1 - ndc.y) / 2) * state.size.height
+        );
+      }
+    } else {
+      state.camera.position.lerp(new Vector3(isMobile ? 0 : 0.3, cameraY, cameraZ), 1 - Math.exp(-delta * 2.2));
+      state.camera.lookAt(0, 0, 0);
+    }
   });
 
   return (
@@ -317,7 +362,11 @@ function LongDistanceGlobeScene({ progress, isMobile }) {
         <meshStandardMaterial
           color="#ffe6d1"
           emissive="#ffe6d1"
-          emissiveIntensity={MathUtils.lerp(0.2, 1.6, MathUtils.clamp((progress - 0.88) / 0.12, 0, 1))}
+          emissiveIntensity={
+            MathUtils.clamp((progress - 0.88) / 0.05, 0, 1) *
+            MathUtils.clamp(1 - (progress - 0.91) / 0.04, 0, 1) *
+            1.6
+          }
         />
       </mesh>
 
@@ -328,20 +377,24 @@ function LongDistanceGlobeScene({ progress, isMobile }) {
       >
         {LONG_DISTANCE_SECTION.locations.hanoi.label}
       </RouteLabel>
-      <RouteLabel
-        position={MOSCOW_VECTOR.clone().setLength(
-          LONG_DISTANCE_SECTION.earthSurfaceRadius + LONG_DISTANCE_SECTION.labelSurfaceOffset
-        )}
-      >
-        {LONG_DISTANCE_SECTION.locations.moscow.label}
-      </RouteLabel>
+      {progress < 0.92 && (
+        <RouteLabel
+          position={MOSCOW_VECTOR.clone().setLength(
+            LONG_DISTANCE_SECTION.earthSurfaceRadius + LONG_DISTANCE_SECTION.labelSurfaceOffset
+          )}
+        >
+          {LONG_DISTANCE_SECTION.locations.moscow.label}
+        </RouteLabel>
+      )}
 
-      <DestinationGlow
-        position={MOSCOW_VECTOR.clone().setLength(
-          LONG_DISTANCE_SECTION.earthSurfaceRadius + LONG_DISTANCE_SECTION.glowSurfaceOffset
-        )}
-        intensity={MathUtils.clamp((progress - 0.88) / 0.12, 0, 1)}
-      />
+      {progress < 0.93 && (
+        <DestinationGlow
+          position={MOSCOW_VECTOR.clone().setLength(
+            LONG_DISTANCE_SECTION.earthSurfaceRadius + LONG_DISTANCE_SECTION.glowSurfaceOffset
+          )}
+          intensity={MathUtils.clamp((progress - 0.88) / 0.05, 0, 1) * MathUtils.clamp(1 - (progress - 0.91) / 0.02, 0, 1)}
+        />
+      )}
 
       <group ref={planeAnchorRef}>
         <group position={[LONG_DISTANCE_SECTION.planeOffsetX, 0, 0]}>

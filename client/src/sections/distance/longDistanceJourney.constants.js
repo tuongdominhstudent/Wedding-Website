@@ -1,6 +1,6 @@
 export const LONG_DISTANCE_SECTION = Object.freeze({
-  pinDistanceDesktop: 2.8,
-  pinDistanceMobile: 2.35,
+  pinDistanceDesktop: 6.5,
+  pinDistanceMobile: 5.2,
   earthTargetSize: 3.45,
   planeTargetSize: 0.56,
   planeOffsetX: -0.1,
