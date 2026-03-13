@@ -36,7 +36,9 @@ describe('PreweddingSection', () => {
   it('renders the dedicated prewedding video section', () => {
     render(<PreweddingSection />);
 
-    expect(screen.getByRole('heading', { name: /a quiet chapter before the day/i })).toBeInTheDocument();
+    expect(screen.getByText(/prewedding film/i)).toBeInTheDocument();
+    expect(screen.getByText(/lời hẹn ước/i)).toBeInTheDocument();
+    expect(screen.getByText(/dành hết cho em/i)).toBeInTheDocument();
     expect(screen.getByLabelText('Prewedding video')).toBeInTheDocument();
     expect(observeMock).toHaveBeenCalled();
   });

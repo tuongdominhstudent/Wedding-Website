@@ -1,4 +1,4 @@
-import preweddingVideo from '../../assets/preweddingVideo.webm';
+import preweddingVideo from '../../assets/preweddingVideo.mp4';
 import { getSectionPreloadStrategy } from '../../config/sectionRegistry';
 
 export const PREWEDDING_ASSETS = Object.freeze({
