@@ -9,6 +9,8 @@ const {
   registerIntroAssetsMock,
   registerFirstsAssetsMock,
   registerLongDistanceAssetsMock,
+  registerPreweddingAssetsMock,
+  registerCalendarAssetsMock,
   lenisMock,
   tickerAdd,
   tickerRemove,
@@ -18,6 +20,8 @@ const {
   registerIntroAssetsMock: vi.fn(),
   registerFirstsAssetsMock: vi.fn(),
   registerLongDistanceAssetsMock: vi.fn(),
+  registerPreweddingAssetsMock: vi.fn(),
+  registerCalendarAssetsMock: vi.fn(),
   lenisMock: {
     stop: vi.fn(),
     start: vi.fn(),
@@ -44,6 +48,14 @@ vi.mock('../sections/firsts/firstsJourneyAssets', () => ({
 
 vi.mock('../sections/distance/longDistanceJourneyAssets', () => ({
   registerLongDistanceAssets: (registry) => registerLongDistanceAssetsMock(registry)
+}));
+
+vi.mock('../sections/prewedding/preweddingAssets', () => ({
+  registerPreweddingAssets: (registry) => registerPreweddingAssetsMock(registry)
+}));
+
+vi.mock('../sections/calendar/calendarAssets', () => ({
+  registerCalendarAssets: (registry) => registerCalendarAssetsMock(registry)
 }));
 
 vi.mock('../motion/scroll/createLenis', () => ({
@@ -99,6 +111,12 @@ describe('useAppBootstrap', () => {
     registerLongDistanceAssetsMock.mockImplementation((registry) => {
       registerAsset(registry, 'distance-model', ASSET_TIER.DEFERRED, 'distance-model', []);
     });
+    registerPreweddingAssetsMock.mockImplementation((registry) => {
+      registerAsset(registry, 'prewedding-video', ASSET_TIER.DEFERRED, 'prewedding-video', []);
+    });
+    registerCalendarAssetsMock.mockImplementation((registry) => {
+      registerAsset(registry, 'calendar-hero', ASSET_TIER.DEFERRED, 'calendar-hero', []);
+    });
     window.matchMedia = vi.fn().mockReturnValue({
       matches: false,
       addEventListener: vi.fn(),
@@ -129,6 +147,12 @@ describe('useAppBootstrap', () => {
     registerLongDistanceAssetsMock.mockImplementation((registry) => {
       registerAsset(registry, 'distance-model', ASSET_TIER.DEFERRED, 'distance-model', loadOrder);
     });
+    registerPreweddingAssetsMock.mockImplementation((registry) => {
+      registerAsset(registry, 'prewedding-video', ASSET_TIER.DEFERRED, 'prewedding-video', loadOrder);
+    });
+    registerCalendarAssetsMock.mockImplementation((registry) => {
+      registerAsset(registry, 'calendar-hero', ASSET_TIER.DEFERRED, 'calendar-hero', loadOrder);
+    });
 
     render(<BootstrapHarness />);
 
@@ -143,7 +167,7 @@ describe('useAppBootstrap', () => {
       await useAppStore.getState().loadDeferredAssets();
     });
 
-    expect(loadOrder).toEqual(['intro-video', 'firsts-photo', 'distance-model']);
+    expect(loadOrder).toEqual(['intro-video', 'firsts-photo', 'distance-model', 'prewedding-video', 'calendar-hero']);
     expect(useAppStore.getState().deferredAssetPhase).toBe(DEFERRED_ASSET_PHASE.READY);
     expect(useAppStore.getState().deferredAssetProgress).toBe(1);
   });

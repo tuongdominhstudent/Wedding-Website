@@ -18,6 +18,26 @@ const DEFAULT_SECTIONS = Object.freeze([
     id: 'long-distance',
     order: 20,
     preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
+  }),
+  Object.freeze({
+    id: 'prewedding',
+    order: 30,
+    preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
+  }),
+  Object.freeze({
+    id: 'calendar',
+    order: 40,
+    preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
+  }),
+  Object.freeze({
+    id: 'logistics',
+    order: 50,
+    preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
+  }),
+  Object.freeze({
+    id: 'gift',
+    order: 60,
+    preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
   })
 ]);
 

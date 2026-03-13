@@ -7,6 +7,8 @@ import { AssetLoader } from '../services/assets/assetLoader';
 import { registerLongDistanceAssets } from '../sections/distance/longDistanceJourneyAssets';
 import { registerFirstsAssets } from '../sections/firsts/firstsJourneyAssets';
 import { registerIntroAssets } from '../sections/intro/introAssets';
+import { registerCalendarAssets } from '../sections/calendar/calendarAssets';
+import { registerPreweddingAssets } from '../sections/prewedding/preweddingAssets';
 import { BOOT_PHASE, DEFERRED_ASSET_PHASE, useAppStore } from '../stores/useAppStore';
 
 function wait(ms) {
@@ -79,6 +81,8 @@ export function useAppBootstrap() {
     registerIntroAssets(registry);
     registerFirstsAssets(registry);
     registerLongDistanceAssets(registry);
+    registerPreweddingAssets(registry);
+    registerCalendarAssets(registry);
     const loader = new AssetLoader(registry);
     setAssetRegistry(registry);
     setAssetLoader(loader);

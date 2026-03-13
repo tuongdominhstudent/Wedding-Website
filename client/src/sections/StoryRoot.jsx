@@ -3,12 +3,20 @@ import { useState } from 'react';
 import { getRegisteredSections } from '../config/sectionRegistry';
 import LongDistanceJourneySection from './distance/LongDistanceJourneySection';
 import FirstsJourneySection from './firsts/FirstsJourneySection';
+import GiftQrSection from './gift/GiftQrSection';
 import IntroSection from './intro/IntroSection';
+import LogisticsSection from './logistics/LogisticsSection';
+import CalendarSection from './calendar/CalendarSection';
+import PreweddingSection from './prewedding/PreweddingSection';
 import styles from './StoryRoot.module.css';
 
 const SECTION_COMPONENTS = Object.freeze({
   firsts: FirstsJourneySection,
-  'long-distance': LongDistanceJourneySection
+  'long-distance': LongDistanceJourneySection,
+  prewedding: PreweddingSection,
+  calendar: CalendarSection,
+  logistics: LogisticsSection,
+  gift: GiftQrSection
 });
 
 function StoryRoot({ isBootReady }) {

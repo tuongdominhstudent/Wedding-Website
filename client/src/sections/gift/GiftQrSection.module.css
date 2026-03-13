@@ -1,0 +1,116 @@
+.section {
+  position: relative;
+  padding: clamp(4.5rem, 11vw, 7rem) 1rem clamp(6rem, 14vw, 8rem);
+  background:
+    radial-gradient(circle at 50% 0%, rgb(255 230 209 / 0.16), transparent 30%),
+    linear-gradient(180deg, #240410 0%, #1b020d 100%);
+  color: var(--color-brand-mist);
+}
+
+.inner {
+  width: min(100%, 64rem);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.copy {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 34rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: rgb(255 230 209 / 0.72);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: clamp(2rem, 8.5vw, 4.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.body,
+.note,
+.metaLabel {
+  color: rgb(255 230 209 / 0.78);
+}
+
+.body,
+.note {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+  border-radius: 1.6rem;
+  border: 1px solid rgb(255 230 209 / 0.14);
+  background:
+    linear-gradient(160deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.03)),
+    rgb(255 255 255 / 0.02);
+  box-shadow:
+    0 24px 42px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.qrBox {
+  display: grid;
+  place-items: center;
+  width: min(100%, 18rem);
+  aspect-ratio: 1;
+  border-radius: 1.4rem;
+  background: linear-gradient(135deg, #fffaf6, #f2e5d8);
+  color: var(--color-text-primary);
+  box-shadow: 0 16px 28px rgb(0 0 0 / 0.18);
+}
+
+.qrInner {
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  background:
+    linear-gradient(90deg, #320010 0 18%, transparent 18% 24%, #320010 24% 42%, transparent 42% 50%, #320010 50% 70%, transparent 70% 76%, #320010 76% 100%),
+    linear-gradient(180deg, #320010 0 18%, transparent 18% 24%, #320010 24% 42%, transparent 42% 50%, #320010 50% 70%, transparent 70% 76%, #320010 76% 100%);
+  background-color: #fffaf6;
+}
+
+.meta {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.metaLabel {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: clamp(1rem, 4vw, 1.45rem);
+  line-height: 1.4;
+}
+
+@media (min-width: 48rem) {
+  .section {
+    padding-inline: 1.5rem;
+  }
+
+  .card {
+    grid-template-columns: minmax(16rem, 18rem) minmax(0, 1fr);
+    align-items: center;
+    gap: 1.6rem;
+    padding: 1.5rem;
+  }
+}
