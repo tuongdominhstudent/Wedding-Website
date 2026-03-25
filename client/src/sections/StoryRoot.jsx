@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { getRegisteredSections } from '../config/sectionRegistry';
 import LongDistanceJourneySection from './distance/LongDistanceJourneySection';
 import FirstsJourneySection from './firsts/FirstsJourneySection';
-import GiftQrSection from './gift/GiftQrSection';
 import IntroSection from './intro/IntroSection';
 import LogisticsSection from './logistics/LogisticsSection';
 import CalendarSection from './calendar/CalendarSection';
 import PreweddingSection from './prewedding/PreweddingSection';
+import PhotoboothSection from './photobooth/PhotoboothSection';
+import SectionBand from '../components/SectionBand/SectionBand';
 import styles from './StoryRoot.module.css';
 
 const SECTION_COMPONENTS = Object.freeze({
@@ -16,7 +17,7 @@ const SECTION_COMPONENTS = Object.freeze({
   prewedding: PreweddingSection,
   calendar: CalendarSection,
   logistics: LogisticsSection,
-  gift: GiftQrSection
+  photobooth: PhotoboothSection
 });
 
 function StoryRoot({ isBootReady }) {
@@ -38,8 +39,21 @@ function StoryRoot({ isBootReady }) {
             setIsStoryUnlocked(true);
           }}
         />
+        {isStoryUnlocked && (
+          <SectionBand text="Những Cái Đầu Tiên" />
+        )}
         {isStoryUnlocked
-          ? storySections.map(({ id, Component }) => <Component key={id} />)
+          ? storySections.map(({ id, Component }) => {
+              if (id === 'long-distance') {
+                return (
+                  <React.Fragment key={id}>
+                    <SectionBand text="Yêu Xa" />
+                    <Component />
+                  </React.Fragment>
+                );
+              }
+              return <Component key={id} />;
+            })
           : null}
         <section className={styles.nextSectionPlaceholder} aria-hidden="true" />
       </div>
