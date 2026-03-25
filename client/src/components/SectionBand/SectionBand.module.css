@@ -21,8 +21,8 @@
 
 .item {
   display: inline-block;
-  font-family: var(--font-family-display);
-  font-size: 13px;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
   font-weight: 400;
   letter-spacing: 0.25em;
   text-transform: uppercase;

@@ -47,7 +47,7 @@ function StoryRoot({ isBootReady }) {
               if (id === 'long-distance') {
                 return (
                   <React.Fragment key={id}>
-                    <SectionBand text="Yêu Xa" />
+                    <SectionBand text="Những Ngày Yêu Xa" />
                     <Component />
                   </React.Fragment>
                 );
