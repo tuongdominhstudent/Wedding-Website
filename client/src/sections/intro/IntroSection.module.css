@@ -3,7 +3,7 @@
   min-height: 100svh;
   background:
     radial-gradient(circle at 50% 28%, rgb(255 230 209 / 18%), transparent 54%),
-    linear-gradient(180deg, #2a0010 0%, #3a0214 52%, #2d000f 100%);
+    linear-gradient(180deg, #2a0010 0%, #3a0214 52%, #3a0817 100%);
   overflow: hidden;
 }
 
@@ -21,6 +21,8 @@
   z-index: 0;
   pointer-events: none;
   opacity: 0.86;
+  mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
 }
 
 .landscapeGuard {
