@@ -37,6 +37,12 @@ See: `.planning/PROJECT.md` (updated 2026-03-13)
 - Goal: Make the invitation reliably enterable and maintainable as more sections are added
 - Status: pending
 
+## Quick Tasks Completed
+
+| ID | Task | Commit |
+|----|------|--------|
+| 260325-k2c | Add cinematic marquee section bands between intro/firsts and firsts/long-distance | d248b83 |
+
 ## Notes
 
 - Brownfield project with existing intro, firsts, partial long-distance section, and basic wishes backend already in place.
