@@ -10,6 +10,8 @@ describe('LogisticsSection', () => {
     expect(screen.getByRole('heading', { name: /join us in hanoi/i })).toBeInTheDocument();
     expect(screen.getByText(/saturday, july 10, 2027/i)).toBeInTheDocument();
     expect(screen.getByText(/riverside garden hall/i)).toBeInTheDocument();
+    expect(screen.getByText(/09:30/i)).toBeInTheDocument();
+    expect(screen.getByText(/welcome & check-in/i)).toBeInTheDocument();
     expect(screen.getByTitle(/venue map preview/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /open in google maps/i })).toHaveAttribute(
       'href',

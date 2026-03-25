@@ -35,7 +35,7 @@ function PreweddingSection() {
         video.pause();
       },
       {
-        threshold: 0.45
+        threshold: 0.2
       }
     );
 
@@ -128,6 +128,7 @@ function PreweddingSection() {
             className={styles.video}
             src={PREWEDDING_ASSETS.video}
             playsInline
+            muted
             loop
             preload="metadata"
             aria-label="Prewedding video"

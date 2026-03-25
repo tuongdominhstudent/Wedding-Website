@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { gsap } from '../../motion/gsap/gsapConfig';
 import LongDistanceGlobeScene from './LongDistanceGlobeScene';
@@ -10,33 +10,39 @@ import shapeImage from '../../assets/weddingPhotos/2.webp';
 import brideImage from '../../assets/weddingPhotos/bride.webp';
 import groomImage from '../../assets/weddingPhotos/groom.webp';
 
-function buildLineState(progress) {
-  const thresholds = LONG_DISTANCE_SECTION.revealThresholds;
-
-  return {
-    distanceVisible: progress >= thresholds.distance,
-    tripsVisible: progress >= thresholds.trips,
-    daysVisible: progress >= thresholds.days,
-    homeVisible: progress >= thresholds.home,
-    tripsValue: Math.round(
-      gsap.utils.clamp(0, 1, (progress - thresholds.trips) / 0.18) * LONG_DISTANCE_SECTION.counters.trips
-    ),
-    daysValue: Math.round(
-      gsap.utils.clamp(0, 1, (progress - thresholds.days) / 0.2) * LONG_DISTANCE_SECTION.counters.days
-    )
-  };
-}
+const FILL_START = 0.92;
 
 function LongDistanceJourneySection() {
-  const [progress, setProgress] = useState(0);
+  // Ref-based progress — no React reconciliation on every scroll tick
+  const progressRef = useRef(0);
+  // textVisible state: flips only once at the 0.7 fill threshold
   const [textVisible, setTextVisible] = useState(false);
   const isMobile = window.matchMedia('(max-width: 64rem)').matches;
-  const lineState = useMemo(() => buildLineState(progress), [progress]);
 
-  // Moscow screen position is updated each frame from the R3F scene (no re-render needed)
+  // Previous flag values — avoid redundant DOM writes
+  const prevFlagsRef = useRef({
+    distanceVisible: false,
+    tripsVisible: false,
+    daysVisible: false,
+    homeVisible: false,
+    textVisible: false
+  });
+
+  // DOM element refs for direct imperative updates (zero React reconciliation)
+  const fillOverlayRef = useRef(null);
+  const heroImgRef = useRef(null);
+  const tripsSpanRef = useRef(null);
+  const daysSpanRef = useRef(null);
+  const distanceLineRef = useRef(null);
+  const tripsLineRef = useRef(null);
+  const daysLineRef = useRef(null);
+  const homeLineRef = useRef(null);
+
+  // Precomputed fill-circle diagonal (updated on resize)
+  const diagonalRef = useRef(Math.hypot(window.innerWidth, window.innerHeight) * 1.1);
+
+  // Moscow screen position — written by R3F scene each frame
   const moscowPosRef = useRef({ x: window.innerWidth * 0.72, y: window.innerHeight * 0.38 });
-  // Cache the canvas frame's page offset so projected coords can be translated to section-relative coords.
-  // Read once when the fill starts (section is pinned so position doesn't change during animation).
   const canvasFrameRef = useRef(null);
   const canvasRectRef = useRef(null);
   const handleMoscowPos = useCallback((x, y) => {
@@ -46,19 +52,6 @@ function LongDistanceJourneySection() {
     const offset = canvasRectRef.current ?? { left: 0, top: 0 };
     moscowPosRef.current = { x: offset.left + x, y: offset.top + y };
   }, []);
-
-  const FILL_START = 0.92;
-  const fillFactor = Math.max(0, (progress - FILL_START) / (1 - FILL_START));
-
-  // Trigger text CSS transitions once the fill is substantial
-  useEffect(() => {
-    if (fillFactor >= 0.7 && !textVisible) {
-      setTextVisible(true);
-    }
-    if (fillFactor < 0.05) {
-      setTextVisible(false);
-    }
-  }, [fillFactor, textVisible]);
 
   useLayoutEffect(() => {
     const root = document.getElementById('long-distance-journey');
@@ -93,7 +86,76 @@ function LongDistanceJourneySection() {
           value: 1,
           duration: 0.93,
           onUpdate: () => {
-            setProgress(progressState.value);
+            const p = progressState.value;
+            progressRef.current = p;
+
+            const thresholds = LONG_DISTANCE_SECTION.revealThresholds;
+            const flags = prevFlagsRef.current;
+
+            // Text line active classes — only toggle on threshold crossing
+            const distanceVisible = p >= thresholds.distance;
+            if (distanceVisible !== flags.distanceVisible) {
+              flags.distanceVisible = distanceVisible;
+              distanceLineRef.current?.classList.toggle(styles.textLineActive, distanceVisible);
+            }
+
+            const tripsVisible = p >= thresholds.trips;
+            if (tripsVisible !== flags.tripsVisible) {
+              flags.tripsVisible = tripsVisible;
+              tripsLineRef.current?.classList.toggle(styles.textLineActive, tripsVisible);
+            }
+
+            const daysVisible = p >= thresholds.days;
+            if (daysVisible !== flags.daysVisible) {
+              flags.daysVisible = daysVisible;
+              daysLineRef.current?.classList.toggle(styles.textLineActive, daysVisible);
+            }
+
+            const homeVisible = p >= thresholds.home;
+            if (homeVisible !== flags.homeVisible) {
+              flags.homeVisible = homeVisible;
+              homeLineRef.current?.classList.toggle(styles.textLineActive, homeVisible);
+            }
+
+            // Counter values — direct textContent (no React reconciliation per digit)
+            if (tripsSpanRef.current) {
+              const tripsValue = Math.round(
+                gsap.utils.clamp(0, 1, (p - thresholds.trips) / 0.18) * LONG_DISTANCE_SECTION.counters.trips
+              );
+              tripsSpanRef.current.textContent = tripsValue;
+            }
+
+            if (daysSpanRef.current) {
+              const daysValue = Math.round(
+                gsap.utils.clamp(0, 1, (p - thresholds.days) / 0.2) * LONG_DISTANCE_SECTION.counters.days
+              );
+              daysSpanRef.current.textContent = daysValue;
+            }
+
+            // Fill overlay — direct clipPath update (no React reconciliation per frame)
+            const fillFactor = Math.max(0, (p - FILL_START) / (1 - FILL_START));
+            if (fillOverlayRef.current) {
+              if (fillFactor > 0) {
+                const radius = diagonalRef.current * fillFactor;
+                const { x, y } = moscowPosRef.current;
+                fillOverlayRef.current.style.clipPath = `circle(${radius}px at ${x}px ${y}px)`;
+                fillOverlayRef.current.style.display = '';
+              } else {
+                fillOverlayRef.current.style.display = 'none';
+              }
+            }
+
+            // Hero image opacity — direct style update
+            if (heroImgRef.current) {
+              heroImgRef.current.style.opacity = Math.max(0, Math.min(1, (fillFactor - 0.3) / 0.7));
+            }
+
+            // Text overlay transition — state update happens only once
+            const shouldShowText = fillFactor >= 0.7;
+            if (shouldShowText !== flags.textVisible) {
+              flags.textVisible = shouldShowText;
+              setTextVisible(shouldShowText);
+            }
           }
         })
         // Hold at the end so the user has time to see the full image before the section unpins
@@ -108,9 +170,12 @@ function LongDistanceJourneySection() {
     return () => ctx.revert();
   }, [isMobile]);
 
-  // Invalidate cached canvas rect on resize so Moscow overlay origin stays accurate
+  // Invalidate cached canvas rect and recompute fill diagonal on resize
   useEffect(() => {
-    const handleResize = () => { canvasRectRef.current = null; };
+    const handleResize = () => {
+      canvasRectRef.current = null;
+      diagonalRef.current = Math.hypot(window.innerWidth, window.innerHeight) * 1.1;
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -125,25 +190,25 @@ function LongDistanceJourneySection() {
         <div className={styles.stage}>
           <div className={styles.copyColumn}>
             <div className={styles.copyStack}>
-              <div className={`${styles.textLine} ${lineState.distanceVisible ? styles.textLineActive : ''}`}>
+              <div ref={distanceLineRef} className={styles.textLine}>
                 <div className={styles.statLine}>
                   Hơn 9000<span className={styles.unit}>km</span>
                 </div>
               </div>
 
-              <div className={`${styles.textLine} ${lineState.tripsVisible ? styles.textLineActive : ''}`}>
+              <div ref={tripsLineRef} className={styles.textLine}>
                 <div className={styles.statLine}>
-                  {lineState.tripsValue}<span className={styles.unit}>chuyến đi</span>
+                  <span ref={tripsSpanRef}>0</span><span className={styles.unit}>chuyến đi</span>
                 </div>
               </div>
 
-              <div className={`${styles.textLine} ${lineState.daysVisible ? styles.textLineActive : ''}`}>
+              <div ref={daysLineRef} className={styles.textLine}>
                 <div className={styles.statLine}>
-                  {lineState.daysValue}<span className={styles.unit}>ngày yêu xa</span>
+                  <span ref={daysSpanRef}>0</span><span className={styles.unit}>ngày yêu xa</span>
                 </div>
               </div>
 
-              <div className={`${styles.textLine} ${lineState.homeVisible ? styles.textLineActive : ''}`}>
+              <div ref={homeLineRef} className={styles.textLine}>
                 <div className={styles.finalLine}>
                   <span>Và chúng ta đã về </span>
                   <span className={styles.finalLineBreak}>chung một nhà</span>
@@ -161,38 +226,39 @@ function LongDistanceJourneySection() {
                 gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
               >
                 <Suspense fallback={null}>
-                  <LongDistanceGlobeScene progress={progress} isMobile={isMobile} onMoscowPos={handleMoscowPos} />
+                  <LongDistanceGlobeScene
+                    progressRef={progressRef}
+                    isMobile={isMobile}
+                    onMoscowPos={handleMoscowPos}
+                  />
                 </Suspense>
               </Canvas>
             </div>
           </div>
         </div>
 
-        {fillFactor > 0 && (
-          <div
-            className={styles.fillOverlay}
-            style={{
-              clipPath: `circle(${
-                Math.hypot(window.innerWidth, window.innerHeight) * 1.1 * fillFactor
-              }px at ${moscowPosRef.current.x}px ${moscowPosRef.current.y}px)`
-            }}
-          >
-            <div className={styles.heroPanel}>
-              <img
-                src={heroImage}
-                alt=""
-                className={styles.heroImage}
-                style={{ opacity: Math.max(0, Math.min(1, (fillFactor - 0.3) / 0.7)) }}
-              />
-              <div className={`${styles.textOverlay} ${textVisible ? styles.textOverlayVisible : ''}`}>
-                <p className={styles.saveTheDate}>Save the Date</p>
-                <p className={styles.ourLabel}>Our</p>
-                <h1 className={styles.weddingTitle}>WEDDING</h1>
-                <p className={styles.coupleName}>Minh Tường — Thảo Nguyên</p>
-              </div>
+        {/* Always in DOM — shown/hidden via direct style.display in GSAP onUpdate */}
+        <div
+          ref={fillOverlayRef}
+          className={styles.fillOverlay}
+          style={{ display: 'none' }}
+        >
+          <div className={styles.heroPanel}>
+            <img
+              ref={heroImgRef}
+              src={heroImage}
+              alt=""
+              className={styles.heroImage}
+              style={{ opacity: 0 }}
+            />
+            <div className={`${styles.textOverlay} ${textVisible ? styles.textOverlayVisible : ''}`}>
+              <p className={styles.saveTheDate}>Save the Date</p>
+              <p className={styles.ourLabel}>Our</p>
+              <h1 className={styles.weddingTitle}>WEDDING</h1>
+              <p className={styles.coupleName}>Minh Tường — Thảo Nguyên</p>
             </div>
           </div>
-        )}
+        </div>
       </section>
 
       <section className={styles.postSection} aria-label="Wedding invitation details">

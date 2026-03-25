@@ -18,6 +18,24 @@ function LogisticsSection() {
             <div className={styles.spacer} aria-hidden="true" />
             <p className={styles.label}>{LOGISTICS_SECTION.timeLabel}</p>
             <p className={styles.value}>{LOGISTICS_SECTION.timeValue}</p>
+
+            <div className={styles.timelineBlock}>
+              <p className={styles.label}>{LOGISTICS_SECTION.timelineEyebrow}</p>
+              <ol className={styles.timeline}>
+                {LOGISTICS_SECTION.timelineItems.map((item) => (
+                  <li key={`${item.time}-${item.title}`} className={styles.timelineItem}>
+                    <div className={styles.timelineMarker} aria-hidden="true">
+                      <span className={styles.timelineDot} />
+                    </div>
+                    <div className={styles.timelineContent}>
+                      <p className={styles.timelineTime}>{item.time}</p>
+                      <h3 className={styles.timelineItemTitle}>{item.title}</h3>
+                      <p className={styles.timelineDescription}>{item.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </article>
 
           <article className={styles.card} aria-label="Wedding venue and map">

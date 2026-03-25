@@ -31,8 +31,8 @@ vi.mock('../sections/logistics/LogisticsSection', () => ({
   default: () => <div data-testid="logistics-section">Logistics Section</div>
 }));
 
-vi.mock('../sections/gift/GiftQrSection', () => ({
-  default: () => <div data-testid="gift-section">Gift Section</div>
+vi.mock('../sections/photobooth/PhotoboothSection', () => ({
+  default: () => <div data-testid="photobooth-section">Photobooth Section</div>
 }));
 
 describe('StoryRoot', () => {
@@ -44,7 +44,7 @@ describe('StoryRoot', () => {
     expect(screen.queryByTestId('prewedding-section')).not.toBeInTheDocument();
     expect(screen.queryByTestId('calendar-section')).not.toBeInTheDocument();
     expect(screen.queryByTestId('logistics-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('gift-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('photobooth-section')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /unlock story/i }));
 
@@ -53,6 +53,6 @@ describe('StoryRoot', () => {
     expect(screen.getByTestId('prewedding-section')).toBeInTheDocument();
     expect(screen.getByTestId('calendar-section')).toBeInTheDocument();
     expect(screen.getByTestId('logistics-section')).toBeInTheDocument();
-    expect(screen.getByTestId('gift-section')).toBeInTheDocument();
+    expect(screen.getByTestId('photobooth-section')).toBeInTheDocument();
   });
 });

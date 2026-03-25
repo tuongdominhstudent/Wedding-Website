@@ -35,7 +35,7 @@ const DEFAULT_SECTIONS = Object.freeze([
     preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
   }),
   Object.freeze({
-    id: 'gift',
+    id: 'photobooth',
     order: 60,
     preloadStrategy: SECTION_PRELOAD_STRATEGY.DEFERRED
   })

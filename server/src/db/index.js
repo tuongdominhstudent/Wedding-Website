@@ -25,4 +25,11 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.exec(schemaSql);
 
+const wishColumns = db.prepare("PRAGMA table_info(wishes)").all();
+const hasPhotoDataColumn = wishColumns.some((column) => column.name === 'photo_data');
+
+if (!hasPhotoDataColumn) {
+  db.exec('ALTER TABLE wishes ADD COLUMN photo_data TEXT');
+}
+
 export { db };

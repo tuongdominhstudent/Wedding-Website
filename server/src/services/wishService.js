@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { db } from '../db/index.js';
 
 const listWishesStmt = db.prepare(`
-  SELECT id, name, message, created_at AS createdAt
+  SELECT id, name, message, photo_data AS photoData, created_at AS createdAt
   FROM wishes
   ORDER BY datetime(created_at) DESC
   LIMIT @limit OFFSET @offset
@@ -11,12 +11,12 @@ const listWishesStmt = db.prepare(`
 const countWishesStmt = db.prepare('SELECT COUNT(*) AS total FROM wishes');
 
 const insertWishStmt = db.prepare(`
-  INSERT INTO wishes (id, name, message, created_at)
-  VALUES (@id, @name, @message, @created_at)
+  INSERT INTO wishes (id, name, message, photo_data, created_at)
+  VALUES (@id, @name, @message, @photo_data, @created_at)
 `);
 
 const getWishByIdStmt = db.prepare(`
-  SELECT id, name, message, created_at AS createdAt
+  SELECT id, name, message, photo_data AS photoData, created_at AS createdAt
   FROM wishes
   WHERE id = ?
 `);
@@ -36,6 +36,7 @@ export function createWish(input) {
     id: nanoid(12),
     name: input.name,
     message: input.message,
+    photo_data: input.photoData ?? null,
     created_at: new Date().toISOString()
   };
 
